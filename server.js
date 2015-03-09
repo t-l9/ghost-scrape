@@ -1,77 +1,66 @@
 var express = require('express');
-var fs = require('fs');
+var fs      = require('fs');
 var request = require('request');
 var cheerio = require('cheerio');
 var app     = express();
 
 app.get('/', function(req, res){
 
-	var url = 'http://tim.ghost.io';
-	var articles = [];
+	function Scrape(url, articles) {
+		this.url      = url;
+		this.getPosts = request(url, function(error, response, html) {
+				if(!error) {
+					var $ = cheerio.load(html);
 
-	request(url, function(error, response, html){
-		if(!error){
-			var $ = cheerio.load(html);
-			var post;
+					$('article').each(function(index) {
+						var self = $(this);
+						var article = {
+							header : self.find('h2.post-title').text(),
+							route: url + self.find('h2.post-title a').attr('href'),
+							content : null,
+							author: self.find('footer a').text(),
+							timestamp : self.find('time.post-date').text()
+						};
 
+						articles[index] = article;
+					});
 
-			$('article').each(function(index) {
-				var self = $(this);
-
-				var article = {
-					header : self.find('h2.post-title').text(),
-					route: url + self.find('h2.post-title a').attr('href'),
-					content : '',
-					author: self.find('footer a').text(),
-					timestamp : self.find('time.post-date').text()
-				};
-
-				// function callback(content) {
-				// 	console.log(content);
-				// }
-
-				// request(article.route, function(error, response, html) {
-				// 	$ = cheerio.load(html);
-				// 	post = $('section.post-content').text();
-				// });
-
-				// function getPosts(error, response, html) {
-					// $ = cheerio.load(html);
-					// post = $('section.post-content').text();
-				// 	console.log(html);
-				// 	return post;
-				// };
-
-				// request(article.route, getPosts());
-
-				var options = {
-					url: article.route
-				};
-
-				function getPost(error, response, body) {
-					if (!error && response.statusCode == 200) {
-						$ = cheerio.load(body);
-						post = $('section.post-content').text();
-						article.content = post;
-					}
+					fs.writeFile('posts.json', JSON.stringify(articles, null, 4), function(err){
+						//console.log('Posts created.');
+					});
 				}
+		});
 
-				request(options, getPost);
+		this.routes = fs.readFile('posts.json', function(error, data) {
+				if(!error) {
+					var postData = data.toString();
+					JSON.parse(postData, function(key, value) {
+						if(key == 'route') {
+							console.log(value);
+						}
+					});
+
+				} else {
+					throw error;
+				}
+		});
+		this.postContent = request(url, function(error, response, html) {
+			if(!error) {
+				var $ = cheerio.load(html);
+
+				fs.writeFile('posts.json', JSON.stringify(articles, null, 4), function(err){
+					//console.log('Posts created.');
+				});
+			}
+		});
+	};
+
+	var myPosts = new Scrape('https://tim.ghost.io', []);
+
+	//myPosts.getPosts;
+	myPosts.routes;
 
 
-
-				console.log(post);
-
-				articles.push(article);
-
-			});
-
-			fs.writeFile('posts.json', JSON.stringify(articles, null, 4), function(err){
-	    		//console.log('Posts created.');
-	    	});
-
-		}
-	});
 
 });
 
