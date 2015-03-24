@@ -30,35 +30,41 @@ app.get('/', function(req, res){
 					});
 				}
 		});
-
 		this.routes = fs.readFile('posts.json', function(error, data) {
 				if(!error) {
-					var postData = data.toString();
+
+					var postData   = data.toString();
+					console.log(postData);
+					var postRoutes = [];
 					JSON.parse(postData, function(key, value) {
 						if(key == 'route') {
-							console.log(value);
+							postRoutes.push(value);
 						}
 					});
+
 
 				} else {
 					throw error;
 				}
+				return postRoutes;
 		});
-		this.postContent = request(url, function(error, response, html) {
-			if(!error) {
-				var $ = cheerio.load(html);
-
-				fs.writeFile('posts.json', JSON.stringify(articles, null, 4), function(err){
-					//console.log('Posts created.');
-				});
-			}
-		});
+		// this.postContent = request(url, function(error, response, html) {
+		// 	if(!error) {
+		// 		var $ = cheerio.load(html);
+		//
+		// 		fs.writeFile('posts.json', JSON.stringify(articles, null, 4), function(err){
+		// 			//console.log('Posts created.');
+		// 		});
+		// 	}
+		// });
 	};
 
 	var myPosts = new Scrape('https://tim.ghost.io', []);
 
+	console.log(myPosts);
 	//myPosts.getPosts;
-	myPosts.routes;
+	// console.log(myPosts.routes);
+
 
 
 
