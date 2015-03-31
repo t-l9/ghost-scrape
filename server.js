@@ -9,65 +9,57 @@ app.get('/', function(req, res){
 	function Scrape(url, articles) {
 		this.url      = url;
 		this.getPosts = request(url, function(error, response, html) {
-				if(!error) {
-					var $ = cheerio.load(html);
+							if(!error) {
 
-					$('article').each(function(index) {
-						var self = $(this);
-						var article = {
-							header : self.find('h2.post-title').text(),
-							route: url + self.find('h2.post-title a').attr('href'),
-							content : null,
-							author: self.find('footer a').text(),
-							timestamp : self.find('time.post-date').text()
-						};
+								var $ = cheerio.load(html);
 
-						articles[index] = article;
-					});
+								$('article').each(function(index) {
+									var self = $(this);
+									var article = {
+										header : self.find('h2.post-title').text(),
+										route: url + self.find('h2.post-title a').attr('href'),
+										content : null,
+										author: self.find('footer a').text(),
+										timestamp : self.find('time.post-date').text()
+									};
 
-					fs.writeFile('posts.json', JSON.stringify(articles, null, 4), function(err){
-						//console.log('Posts created.');
+									articles[index] = article;
+								});
+
+								fs.writeFile('posts.json', JSON.stringify(articles, null, 4), function(err){
+									//console.log('Posts created.');
+								});
+							}
+						});
+
+		this.routes = function() {
+			fs.readFile('posts.json', function(error, data) {
+				var postRoutes = [];
+				postData = data.toString();
+				JSON.parse(postData, function(key, val) {
+					if(key == 'route') {
+						postRoutes.push(val);
+					}
+				});
+
+
+				for(route in postRoutes) {
+					request(route, function(error, response, html) {
+						var $ = cheerio.load(html);
+
+						console.log($);
+
 					});
 				}
-		});
-		this.routes = fs.readFile('posts.json', function(error, data) {
-				if(!error) {
-
-					var postData   = data.toString();
-					console.log(postData);
-					var postRoutes = [];
-					JSON.parse(postData, function(key, value) {
-						if(key == 'route') {
-							postRoutes.push(value);
-						}
-					});
 
 
-				} else {
-					throw error;
-				}
-				return postRoutes;
-		});
-		// this.postContent = request(url, function(error, response, html) {
-		// 	if(!error) {
-		// 		var $ = cheerio.load(html);
-		//
-		// 		fs.writeFile('posts.json', JSON.stringify(articles, null, 4), function(err){
-		// 			//console.log('Posts created.');
-		// 		});
-		// 	}
-		// });
+			});
+		}
 	};
 
 	var myPosts = new Scrape('https://tim.ghost.io', []);
 
-	console.log(myPosts);
-	//myPosts.getPosts;
-	// console.log(myPosts.routes);
-
-
-
-
+	console.log(myPosts.routes());
 });
 
 
