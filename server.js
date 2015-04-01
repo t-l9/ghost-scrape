@@ -2,6 +2,7 @@ var express = require('express');
 var fs      = require('fs');
 var request = require('request');
 var cheerio = require('cheerio');
+var async   = require('async');
 var app     = express();
 
 app.get('/', function(req, res){
@@ -44,12 +45,12 @@ app.get('/', function(req, res){
 
 
 				for(route in postRoutes) {
-					request(route, function(error, response, html) {
-						var $ = cheerio.load(html);
-
-						console.log($);
-
-					});
+					// request(route, function(error, response, html) {
+					// 	var $ = cheerio.load(html);
+					//
+					// 	console.log($);
+					//
+					// });
 				}
 
 
