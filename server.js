@@ -10,28 +10,28 @@ app.get('/', function(req, res){
 	function Scrape(url, articles) {
 		this.url      = url;
 		this.getPosts = request(url, function(error, response, html) {
-							if(!error) {
+			if(!error) {
 
-								var $ = cheerio.load(html);
+				var $ = cheerio.load(html);
 
-								$('article').each(function(index) {
-									var self = $(this);
-									var article = {
-										header : self.find('h2.post-title').text(),
-										route: url + self.find('h2.post-title a').attr('href'),
-										content : null,
-										author: self.find('footer a').text(),
-										timestamp : self.find('time.post-date').text()
-									};
+				$('article').each(function(index) {
+					var self = $(this);
+					var article = {
+						header : self.find('h2.post-title').text(),
+						route: url + self.find('h2.post-title a').attr('href'),
+						content : null,
+						author: self.find('footer a').text(),
+						timestamp : self.find('time.post-date').text()
+					};
 
-									articles[index] = article;
-								});
+					articles[index] = article;
+				});
 
-								fs.writeFile('posts.json', JSON.stringify(articles, null, 4), function(err){
-									//console.log('Posts created.');
-								});
-							}
-						});
+				fs.writeFile('posts.json', JSON.stringify(articles, null, 4), function(err){
+					//console.log('Posts created.');
+				});
+			}
+		});
 
 		this.routes = function() {
 			fs.readFile('posts.json', function(error, data) {
@@ -43,16 +43,13 @@ app.get('/', function(req, res){
 					}
 				});
 
-
 				for(route in postRoutes) {
-					// request(route, function(error, response, html) {
-					// 	var $ = cheerio.load(html);
-					//
-					// 	console.log($);
-					//
-					// });
-				}
+					request(route, function(error, response, html) {
+						var $ = cheerio.load(html);
+						console.log($);
 
+					});
+				}
 
 			});
 		}
